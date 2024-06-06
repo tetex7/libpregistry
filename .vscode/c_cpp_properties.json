@@ -1,0 +1,37 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/usr/include"
+            ],
+            "defines": [
+                "__inline=inline",
+                "__asm=asm"
+            ],
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "gnu17",
+            "cppStandard": "gnu++20",
+            "intelliSenseMode": "linux-gcc-x64",
+            "compilerArgs": ["-fno-strict-aliasing", "-std=gnu++2a"]
+        },
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/usr/i686-w64-mingw32/include/"
+            ],
+            "defines": [
+                "__inline=inline",
+                "__asm=asm"
+            ],
+            "compilerPath": "/usr/bin/x86_64-w64-mingw32-gcc",
+            "cStandard": "gnu17",
+            "cppStandard": "gnu++23",
+            "intelliSenseMode": "windows-gcc-x64",
+            "compilerArgs": ["-fno-strict-aliasing", "-std=gnu++2a"]
+        }
+    ],
+    "version": 4
+}
