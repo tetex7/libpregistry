@@ -18,54 +18,68 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 #include "libpregistry/RegistryEntry.hpp"
+
+#include <cstring>
+
 #include "libpregistry/Registry.hpp"
 
-RegistryEntry::RegistryEntry()
-: val() {}
 
-RegistryEntry::RegistryEntry(const RegistryEntry& entry2)
-: val(entry2.val){}
 
-RegistryEntry& RegistryEntry::operator=(const RegistryEntry& entry1)
+namespace pregistry
 {
-    if (IsReadOnly)
+
+    RegistryEntry::RegistryEntry()
+    : val() {}
+
+    RegistryEntry::RegistryEntry(const RegistryEntry& entry2)
+    : val(entry2.val){}
+
+    RegistryEntry& RegistryEntry::operator=(const RegistryEntry& entry1)
     {
-        throw std::runtime_error("Entry is Readony");
+        /*if (IsReadOnly)
+        {
+            throw std::runtime_error("Entry is Readony");
+        }*/
+        if (entry1.val.type() != val.type())
+        {
+            throw std::runtime_error(std::string(val.type().name()) + " IS NOT " + entry1.val.type().name());
+        }
+        this->val = entry1.val;
+        return *this;
     }
-    if (entry1.val.type() != val.type())
+
+    const std::any& RegistryEntry::getRaw() const
     {
-        throw std::runtime_error(std::string(val.type().name()) + " IS NOT " + entry1.val.type().name());
+        return val;
     }
-    this->val = entry1.val;
-    return *this;
+
+    bool RegistryEntry::operator==(const std::type_info& op2) const
+    {
+        return this->val.type() == op2;
+    }
+
+    bool RegistryEntry::operator!=(const std::type_info& op2) const
+    {
+        return this->val.type() != op2;
+    }
+
+    RegistryEntry::operator Registry&()
+    {
+        /*if (IsReadOnly)
+        {
+            throw std::runtime_error("Entry is Readony");
+        }*/
+
+        if (!val.has_value())
+        {
+            throw std::logic_error("no val");
+        }
+        if (typeid(Registry) == val.type())
+        {
+            throw std::runtime_error(std::string(val.type().name()) + " IS " + typeid(Registry).name());
+        }
+        return std::any_cast<Registry&>(val);
+    }
+
+    RegistryEntry::~RegistryEntry(){}
 }
-
-const std::any& RegistryEntry::getRaw() const
-{
-    return val;
-}
-
-bool RegistryEntry::GetReadPrms() const
-{
-    return IsReadOnly;
-}
-
-RegistryEntry::operator Registry&()
-{
-    if (IsReadOnly)
-    {
-        throw std::runtime_error("Entry is Readony");
-    }
-
-    if (!val.has_value())
-    {
-        throw std::logic_error("no val");
-    }
-    if (typeid(Registry) == val.type())
-    {
-        throw std::runtime_error(std::string(val.type().name()) + " IS " + typeid(Registry).name());
-    }
-    return std::any_cast<Registry&>(val);
-}
-
-RegistryEntry::~RegistryEntry(){}

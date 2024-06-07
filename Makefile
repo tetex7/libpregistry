@@ -24,8 +24,6 @@ LIB_INC =
 #BOND = 115200
 #MCU = atmega168a
 
-
-include libboost.mk
 #include libabsl.mk
 
 SCRTPTS = scripts
@@ -36,7 +34,7 @@ SEX = 0
 SEX_LIST=test,sym1,sym2,sym3
 
 ifeq ($(DEBUG),1)
-OP_FLAG = -g -O1
+OP_FLAG = -g -O0
 DFLAG += -DDEBUG 1
 else
 OP_FLAG = -O2

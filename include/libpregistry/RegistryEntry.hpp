@@ -20,120 +20,114 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #ifndef REGISTRYENTRY_HPP
 #define REGISTRYENTRY_HPP
-#include <any>
 #include <stdexcept>
+#include "libpregistry/peg_defs.hpp"
 
+namespace pregistry
+{
 
-class Registry;
+    class RegistryEntry {
+    private:
+        RegistryEntryType dtype = RegistryEntryType::BREAK;
+        std::any val;
+    public:
+        friend class Registry;
+        RegistryEntry();
 
-class RegistryEntry {
-private:
-    bool IsReadOnly;
-    std::any val;
-public:
-    RegistryEntry();
+        template<class bi1>
+        RegistryEntry(bi1 v)
+        : val(std::make_any<bi1>(v)) {}
 
-    template<class bi1>
-    RegistryEntry(bi1 v)
-    : val(std::make_any<bi1>(v)) {}
+        RegistryEntry(const RegistryEntry& entry2);
 
-    RegistryEntry(const RegistryEntry& entry2);
+        RegistryEntry& operator=(const RegistryEntry& entry1);
 
-    RegistryEntry& operator=(const RegistryEntry& entry1);
-
-    template<class bi1>
-    RegistryEntry& operator=(const bi1 entry1)
-    {
-        if (IsReadOnly)
+        template<class bi1>
+        RegistryEntry& operator=(const bi1 entry1)
         {
-            throw std::runtime_error("Entry is Readony");
-        }
-        if (typeid(bi1) != val.type())
-        {
-            throw std::runtime_error(std::string(val.type().name()) + " IS NOT " + typeid(bi1).name());
-        }
-        this->val = std::make_any<bi1>(entry1);
-        return *this;
-    }
-
-    template<typename bi>
-    explicit operator bi() const
-    {
-        if (!val.has_value())
-        {
-            throw std::logic_error("no val");
+            /*if (IsReadOnly)
+            {
+                throw std::runtime_error("Entry is Readony");
+            }*/
+            if (typeid(bi1) != val.type())
+            {
+                throw std::runtime_error(std::string(val.type().name()) + " IS NOT " + typeid(bi1).name());
+            }
+            this->val = std::make_any<bi1>(entry1);
+            return *this;
         }
 
-        if (typeid(bi) == val.type())
+        template<typename bi>
+        explicit operator bi() const
         {
-            return std::any_cast<bi>(val);
-        }
-        else
-        {
-            throw std::runtime_error(std::string(val.type().name()) + " IS " + typeid(bi).name());
-        }
-    }
+            if (!val.has_value())
+            {
+                throw std::logic_error("no val");
+            }
 
-    operator Registry&();
-
-    template<typename bi>
-    explicit operator std::type_identity_t<bi&>() const
-    {
-        if (IsReadOnly)
-        {
-            throw std::runtime_error("Entry is Readony");
+            if (typeid(bi) == val.type())
+            {
+                return std::any_cast<bi>(val);
+            }
+            else
+            {
+                throw std::runtime_error(std::string(val.type().name()) + " IS " + typeid(bi).name());
+            }
         }
 
-        if (!val.has_value())
+        bool operator==(const std::type_info& op2) const;
+        bool operator!=(const std::type_info& op2) const;
+
+        operator Registry&();
+
+        template<typename bi>
+        explicit operator bi&()
         {
-            throw std::logic_error("no val");
+            /*if (IsReadOnly)
+            {
+                throw std::runtime_error("Entry is Readony");
+            }*/
+
+            if (!val.has_value())
+            {
+                throw std::logic_error("no val");
+            }
+
+            if (typeid(bi) == val.type())
+            {
+                return std::any_cast<bi&>(val);
+            }
+            else
+            {
+                throw std::runtime_error(std::string(val.type().name()) + " IS " + typeid(bi).name());
+            }
         }
 
-        if (typeid(bi) == val.type())
+        template<class otype>
+        std::type_identity_t<otype> cast() const
         {
-            return std::any_cast<bi&>(val);
+            auto& _this = *this;
+            return (otype)_this;
         }
-        else
+
+
+        template<class otype>
+        std::type_identity_t<otype> as() const
         {
-            throw std::runtime_error(std::string(val.type().name()) + " IS " + typeid(bi).name());
+            return cast<otype>();
         }
-    }
 
-    template<class otype>
-    std::type_identity_t<otype> cast() const
-    {
-        auto& _this = *this;
-        return (otype)_this;
-    }
+        const std::any& getRaw() const;
 
+        template<class otype>
+        bool is() const
+        {
+            return typeid(otype) == val.type();
+        }
 
-    template<class otype>
-    std::type_identity_t<otype> as() const
-    {
-        return cast<otype>();
-    }
-
-    const std::any& getRaw() const;
-
-    bool GetReadPrms() const;
-
-    template<class otype>
-    bool is() const
-    {
-        return typeid(otype) == val.type();
-    }
-
-    virtual ~RegistryEntry();
-
-    template<class bi>
-    friend RegistryEntry MakeReadOnlyEntry(bi v)
-    {
-        auto o = RegistryEntry(v);
-        o.IsReadOnly = 1;
-        return o;
-    }
-};
-
+        virtual ~RegistryEntry();
+    };
+}
 
 
 #endif //REGISTRYENTRY_HPP

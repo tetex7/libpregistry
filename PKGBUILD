@@ -20,7 +20,7 @@ pkgver=1.0.0
 pkgrel=1
 pkgdesc='the a registry lib for linux'
 url='www.github.com/tetex7/l61bs'
-provides=('libpregistry.so')
+provides=("libpregistry.so.${pkgver}")
 arch=('x86_64')
 PACKAGER="TRS"
 license=('GPL3')
@@ -43,9 +43,13 @@ build () {
 package() {
   #cd "$srcdir/$pkgname-$pkgver"
   cd ..
-
+  minverN=$(echo "${pkgver}" | head -c 1)
+  eminverN=$(echo "${pkgver}" | head -c 3)
   mkdir -p  "${pkgdir}/usr/include"
   cp -r ./include/libpregistry "${pkgdir}/usr/include/libpregistry"
   install -Dm755 ./bin/libpregistry.so "${pkgdir}/usr/lib/libpregistry.so"
+  ln -s /usr/lib/libpregistry.so "${pkgdir}/usr/lib/libpregistry.so.${pkgver}"
+  ln -s /usr/lib/libpregistry.so "${pkgdir}/usr/lib/libpregistry.so.${minverN}"
+  ln -s /usr/lib/libpregistry.so "${pkgdir}/usr/lib/libpregistry.so.${eminverN}"
 }
 
